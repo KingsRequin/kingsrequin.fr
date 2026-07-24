@@ -563,6 +563,47 @@
         /* Intro en anglais (volontaire) légèrement mise en avant */
         .lead-en { color: rgba(230, 248, 255, 0.9); }
 
+        /* ===== PROJETS ===== */
+        .projects { display: flex; flex-direction: column; gap: 34px; }
+
+        .project-name {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(1.05rem, 3.4vw, 1.45rem);
+            font-weight: 700;
+            color: var(--cyan);
+            margin-bottom: 8px;
+        }
+
+        .project-desc {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 400;
+            font-size: clamp(0.8rem, 2.1vw, 0.95rem);
+            line-height: 1.6;
+            color: rgba(220, 245, 255, 0.6);
+            margin-bottom: 14px;
+        }
+
+        .project-links { display: flex; flex-wrap: wrap; gap: 12px; }
+
+        .project-links a {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--cyan);
+            text-decoration: none;
+            padding: 7px 15px;
+            border: 1px solid var(--cyan-dim);
+            border-radius: 999px;
+            transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .project-links a:hover {
+            border-color: var(--cyan);
+            background: rgba(0, 229, 255, 0.07);
+            box-shadow: 0 0 16px rgba(0, 229, 255, 0.12);
+        }
+
         .contact-section { text-align: center; }
         .contact-section .info-title { margin-bottom: 36px; }
 
@@ -964,17 +1005,28 @@
         <section class="info-section">
             <div class="info-kicker">// 04 · projets</div>
             <h2 class="info-title">mes projets</h2>
-            <div class="link-cards">
-                <a class="link-card" href="https://recette.kingsrequin.fr" target="_blank" rel="noopener">
-                    <svg viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 0-3.9 3.1A3.5 3.5 0 0 0 6 13v1h12v-1a3.5 3.5 0 0 0-2.1-6.9A4 4 0 0 0 12 3zM6 16h12v2H6z"/></svg>
-                    <span class="label">KingsRecette</span>
-                    <span class="sub">recette.kingsrequin.fr</span>
-                </a>
-                <a class="link-card" href="https://heywally.fr" target="_blank" rel="noopener">
-                    <svg viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h5v2H7v10h10v-3h2v5H5V5z"/></svg>
-                    <span class="label">HeyWally</span>
-                    <span class="sub">heywally.fr</span>
-                </a>
+            <div class="projects">
+                <div class="project">
+                    <h3 class="project-name">KingsRecette</h3>
+                    <p class="project-desc">une appli de recettes de cuisine, avec de la recherche.</p>
+                    <div class="project-links">
+                        <a href="https://recette.kingsrequin.fr" target="_blank" rel="noopener">site ↗</a>
+                    </div>
+                </div>
+                <div class="project">
+                    <h3 class="project-name">HeyWally</h3>
+                    <p class="project-desc">à venir.</p>
+                    <div class="project-links">
+                        <a href="https://heywally.fr" target="_blank" rel="noopener">site ↗</a>
+                    </div>
+                </div>
+                <div class="project">
+                    <h3 class="project-name">ce site</h3>
+                    <p class="project-desc">la page où t'es. un aquarium en ascii fait au feeling.</p>
+                    <div class="project-links">
+                        <a href="https://github.com/KingsRequin/kingsrequin.fr" target="_blank" rel="noopener">github ↗</a>
+                    </div>
+                </div>
             </div>
         </section>
 
