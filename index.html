@@ -614,7 +614,25 @@
             font-size: 0.7rem;
             letter-spacing: 0.3em;
             color: var(--teal);
-            opacity: 0.35;
+        }
+
+        .site-footer .footer-line { opacity: 0.35; }
+
+        .site-footer .footer-credit {
+            margin-top: 14px;
+            letter-spacing: 0.08em;
+            opacity: 0.5;
+        }
+
+        .site-footer .footer-credit a {
+            color: var(--cyan);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+        }
+
+        .site-footer .footer-credit a:hover {
+            opacity: 1;
+            border-bottom-color: var(--cyan);
         }
 
         /* Hors aquarium : on masque les indications liées au requin */
@@ -1055,7 +1073,12 @@
             </div>
         </section>
 
-        <footer class="site-footer">kingsrequin.fr · the deep awaits</footer>
+        <footer class="site-footer">
+            <div class="footer-line">kingsrequin.fr · the deep awaits</div>
+            <div class="footer-credit">
+                requin ascii découvert via <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3606705311" target="_blank" rel="noopener">« Ascii Shark »</a> de Kitty (wallpaper engine)
+            </div>
+        </footer>
     </main>
 
     <div class="hint">
