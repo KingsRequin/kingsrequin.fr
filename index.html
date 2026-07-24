@@ -1660,7 +1660,10 @@
         function startAnimation() {
             function next(ts) {
                 if (!lastTime) lastTime = ts;
-                const delta = ts - lastTime;
+                // Onglet en arrière-plan : rAF est suspendu, donc au retour le delta
+                // vaut tout le temps passé ailleurs. On le plafonne à une frame, sinon
+                // l'accumulateur rejoue le retard d'un coup et le requin part en accéléré.
+                const delta = Math.min(ts - lastTime, frameDuration);
                 lastTime = ts;
 
                 frameAccumulator += delta;
