@@ -9,3 +9,7 @@ la landing page de [kingsrequin.fr](https://kingsrequin.fr).
 100% statique : un seul `index.html` (html / css / js vanilla), plus les frames ascii du requin dans `requin/ascii_angles/`.
 
 fait au feeling avec claude code.
+
+## crédits
+
+le requin ascii vient de [« Ascii Shark »](https://steamcommunity.com/sharedfiles/filedetails/?id=3606705311) de Kitty, un wallpaper pour wallpaper engine — c'est là que je l'ai découvert.
