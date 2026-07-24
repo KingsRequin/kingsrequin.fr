@@ -1,0 +1,25 @@
+{
+	"contentrating" : "Everyone",
+	"description" : "Interactive ascii style shark.\nFeatures:\n- Click on shark for time\n- Double click on screen to chase",
+	"file" : "index.html",
+	"general" : 
+	{
+		"properties" : 
+		{
+			"schemecolor" : 
+			{
+				"order" : 0,
+				"text" : "ui_browse_properties_scheme_color",
+				"type" : "color",
+				"value" : "0 0 0"
+			}
+		}
+	},
+	"preview" : "preview.gif",
+	"ratingsex" : "none",
+	"ratingviolence" : "none",
+	"tags" : [ "Animal" ],
+	"title" : "Ascii Shark",
+	"type" : "web",
+	"version" : 0
+}

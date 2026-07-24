@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ASCII Shark</title>
+    <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: black;
+            color: white;
+            font-family: monospace;
+            white-space: pre;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        pre {
+            font-size: 12px;
+            line-height: 11px;
+            margin: 0;
+        }
+
+        #container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        #clock {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Monoton', Impact;
+            font-size: 20vh;
+            font-style: italic;
+            letter-spacing: 1vh;
+            text-align: center;
+            z-index: 1;
+            opacity: 15%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <pre id="frame"></pre>
+    </div>
+    
+    <div id="clock"style="display:none;"></div>
+
+    <script>
+        const allFrames = {};
+        const totalAngles = 360;
+
+        function loadAngleJS(angle) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = `ascii_angles/frames_${angle}.js`;
+                script.onload = () => {
+                    allFrames[angle] = window['frames_' + angle];
+                    resolve();
+                };
+                script.onerror = reject;
+                document.body.appendChild(script);
+            });
+        }
+
+        async function loadAllAngles() {
+            const promises = [];
+            for (let angle = 0; angle <= totalAngles; angle += 1) {
+                promises.push(loadAngleJS(angle));
+            }
+            await Promise.all(promises);
+            startAnimation();
+        }
+
+        loadAllAngles();
+    </script>
+
+    <script>
+        let swim_frame = 0;
+        let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let pos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let mode = 'random';
+        let target = { x: window.innerWidth * 0.75, y: window.innerHeight * 0.75 };
+        let targetPiv = { x: 0, y: 0 };
+        let currentAngle = 0;
+        let displayAngle = 0;
+        let angleOrb = 0;
+        let radius = 200;
+        let lastPositions = [];
+        const bufferSize = 20;
+        const shakeThreshold = 35;
+        const stillnessRadius = 15;
+        let speed = 0;
+        const el = document.getElementById('frame');
+        const container = document.getElementById('container');
+        let timeoutId = null;
+
+        let moveSpeed = 0.005;
+        const noseOffset = 180;
+        const margin = 100;
+
+        // Vitesse de rotation max en degres par frame
+        const maxTurnSpeed = 3;
+        const maxTurnSpeedChase = 6;
+
+        // Compteur d'orbite pour sortir proprement du mode orbit
+        let orbitSteps = 0;
+        const orbitMaxSteps = 90;
+
+        // Timestamp pour animation framerate-independante
+        let lastTime = 0;
+        const targetFPS = 24;
+        const frameDuration = 1000 / targetFPS;
+        let frameAccumulator = 0;
+
+        document.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            lastPositions.push({ x: mouse.x, y: mouse.y });
+            if (lastPositions.length > bufferSize) lastPositions.shift();
+        });
+
+        function updateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            });
+            document.getElementById("clock").textContent = time;
+        }
+
+        el.addEventListener('click', (e) => {
+            const rect = el.getBoundingClientRect();
+            const marginX = rect.width * 0.25;
+            const marginY = rect.height * 0.25;
+            if (e.clientX >= rect.left + marginX && e.clientX <= rect.right - marginX &&
+                e.clientY >= rect.top + marginY && e.clientY <= rect.bottom - marginY) {
+                clock.style.display = 'block';
+            }
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => { clock.style.display = 'none'; }, 10000);
+        });
+
+        let lastClickTime = 0;
+        const DOUBLE_CLICK_MS = 350;
+        document.addEventListener('pointerdown', () => {
+            const now = performance.now();
+            if (now - lastClickTime <= DOUBLE_CLICK_MS) {
+                mode = 'chase';
+                lastClickTime = 0;
+            } else {
+                lastClickTime = now;
+            }
+        });
+
+        function detectShake() {
+            if (lastPositions.length < 2) return false;
+            let totalDist = 0;
+            for (let i = 1; i < lastPositions.length; i++) {
+                const dx = lastPositions[i].x - lastPositions[i - 1].x;
+                const dy = lastPositions[i].y - lastPositions[i - 1].y;
+                totalDist += Math.sqrt(dx * dx + dy * dy);
+            }
+            const avgX = lastPositions.reduce((s, p) => s + p.x, 0) / lastPositions.length;
+            const avgY = lastPositions.reduce((s, p) => s + p.y, 0) / lastPositions.length;
+            const spread = Math.max(...lastPositions.map(p => Math.hypot(p.x - avgX, p.y - avgY)));
+            if (totalDist > shakeThreshold && spread < stillnessRadius) {
+                lastPositions.length = 0;
+                return true;
+            }
+            return false;
+        }
+
+        function angleToTarget(tx, ty) {
+            const dx = tx - pos.x;
+            const dy = ty - pos.y;
+            let a = Math.atan2(dy, -dx) * 180 / Math.PI;
+            if (a < 0) a += 360;
+            return Math.round(a) % 360;
+        }
+
+        function shortestAngleDiff(a, b) {
+            return ((a - b + 540) % 360) - 180;
+        }
+
+        // Tourne progressivement displayAngle vers targetAngle
+        function smoothTurn(targetAngle, maxDeg) {
+            const diff = shortestAngleDiff(targetAngle, displayAngle);
+            if (Math.abs(diff) <= maxDeg) {
+                displayAngle = targetAngle;
+            } else {
+                displayAngle = ((displayAngle + Math.sign(diff) * maxDeg) + 360) % 360;
+            }
+        }
+
+        function pickRandomTarget() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const minDist = Math.min(400, Math.min(w, h) * 0.5);
+            let tx, ty, dist;
+            let attempts = 0;
+            do {
+                tx = margin + Math.random() * (w - margin * 2);
+                ty = margin + Math.random() * (h - margin * 2);
+                dist = Math.hypot(tx - pos.x, ty - pos.y);
+                attempts++;
+            } while (dist < minDist && attempts < 50);
+            return { x: tx, y: ty };
+        }
+
+        function isOutOfBounds() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            return pos.x < -margin || pos.x > w + margin || pos.y < -margin || pos.y > h + margin;
+        }
+
+        // Redirige le requin vers le centre si trop loin des bords
+        function steerBackIfNeeded() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const softMargin = margin * 2;
+            if (pos.x < softMargin || pos.x > w - softMargin ||
+                pos.y < softMargin || pos.y > h - softMargin) {
+                if (mode !== 'chase') {
+                    target = { x: w / 2 + (Math.random() - 0.5) * w * 0.4,
+                               y: h / 2 + (Math.random() - 0.5) * h * 0.4 };
+                    mode = 'swim';
+                }
+            }
+        }
+
+        function pickPivot() {
+            const rad = displayAngle * Math.PI / 180;
+            // Pivot perpendiculaire a la direction (aleatoirement gauche ou droite)
+            const side = Math.random() > 0.5 ? 1 : -1;
+            return {
+                x: pos.x + Math.cos(rad + Math.PI / 2 * side) * radius,
+                y: pos.y + Math.sin(rad + Math.PI / 2 * side) * radius,
+            };
+        }
+
+        function startAnimation() {
+            function next(timestamp) {
+                if (!lastTime) lastTime = timestamp;
+                const delta = timestamp - lastTime;
+                lastTime = timestamp;
+
+                frameAccumulator += delta;
+                if (frameAccumulator < frameDuration) {
+                    requestAnimationFrame(next);
+                    return;
+                }
+                frameAccumulator -= frameDuration;
+
+                // Detection shake => mode chase
+                if (detectShake()) {
+                    mode = 'chase';
+                }
+
+                // Gestion des modes
+                if (mode === 'chase') {
+                    target = mouse;
+                    moveSpeed = 0.012;
+                }
+
+                const dx = target.x - pos.x;
+                const dy = target.y - pos.y;
+                const distance = Math.hypot(dx, dy);
+
+                // Vitesse adaptative selon le mode
+                if (mode === 'chase') {
+                    speed = Math.min(Math.max(distance * moveSpeed, 5), 18);
+                } else {
+                    speed = Math.min(Math.max(distance * moveSpeed, 2), 10);
+                }
+
+                if (mode === 'orbit') {
+                    // Orbite avec compteur de sortie
+                    orbitSteps++;
+                    angleOrb = (angleOrb + 1.5) % 360;
+                    const rad = (270 - angleOrb) * Math.PI / 180;
+                    pos.x = targetPiv.x + Math.cos(rad) * radius;
+                    pos.y = targetPiv.y + Math.sin(rad) * radius;
+                    smoothTurn(Math.round(angleOrb) % 360, maxTurnSpeed);
+
+                    if (orbitSteps >= orbitMaxSteps) {
+                        mode = 'random';
+                    }
+                }
+                else if (distance > noseOffset) {
+                    // Nage vers la cible
+                    pos.x += (dx / distance) * speed;
+                    pos.y += (dy / distance) * speed;
+                    const targetAngle = angleToTarget(target.x, target.y);
+                    const turnSpeed = mode === 'chase' ? maxTurnSpeedChase : maxTurnSpeed;
+                    smoothTurn(targetAngle, turnSpeed);
+                }
+                else if (mode === 'chase') {
+                    // Cible atteinte en mode chase => retour random
+                    target = pickRandomTarget();
+                    moveSpeed = 0.005;
+                    mode = 'swim';
+                }
+                else if (mode === 'random' || mode === 'swim') {
+                    // Cible atteinte => virage puis nouvelle cible
+                    target = pickRandomTarget();
+                    mode = 'turn';
+                }
+
+                if (mode === 'turn') {
+                    targetPiv = pickPivot();
+                    mode = 'orbit';
+                    angleOrb = displayAngle;
+                    orbitSteps = 0;
+                }
+
+                // Garder le requin dans les limites de l'ecran
+                steerBackIfNeeded();
+                if (isOutOfBounds()) {
+                    const w = window.innerWidth;
+                    const h = window.innerHeight;
+                    pos.x = Math.max(-margin, Math.min(w + margin, pos.x));
+                    pos.y = Math.max(-margin, Math.min(h + margin, pos.y));
+                    target = { x: w / 2, y: h / 2 };
+                    mode = 'swim';
+                }
+
+                // Positionnement du container (centre sur le requin)
+                container.style.left = (pos.x - container.offsetWidth / 2) + "px";
+                container.style.top = (pos.y - container.offsetHeight / 2) + "px";
+
+                // Rendu de la frame ASCII
+                const frameAngle = Math.round(displayAngle) % 360;
+                const frames = allFrames[frameAngle];
+                if (frames && frames.length) {
+                    el.innerText = frames[swim_frame];
+                    swim_frame = (swim_frame + 1) % frames.length;
+                }
+
+                updateTime();
+                requestAnimationFrame(next);
+            }
+            requestAnimationFrame(next);
+        }
+    </script>
+
+
+</body>
+</html>
