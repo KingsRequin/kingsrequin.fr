@@ -2,7 +2,9 @@
 
 la landing page de [kingsrequin.fr](https://kingsrequin.fr).
 
-un aquarium en ascii : un requin qui nage en fond, le titre au centre, et au scroll le bocal se referme en 16:9 avant de laisser place aux sections (bio, infra, projets, contact).
+![kingsrequin.fr — desktop](docs/desktop.png)
+
+<img src="docs/mobile.png" width="300" alt="kingsrequin.fr — mobile">
 
 100% statique : un seul `index.html` (html / css / js vanilla), plus les frames ascii du requin dans `requin/ascii_angles/`.
 
