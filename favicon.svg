@@ -1,11 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="16" fill="#030810"/>
-  <g transform="translate(10,18) scale(0.8)">
-    <path d="M10,55 L5,20 L25,35 L50,5 L75,35 L95,20 L90,55 Z" fill="#f0c040" opacity="0.85"/>
-    <rect x="8" y="55" width="84" height="10" rx="2" fill="#f0c040" opacity="0.85"/>
-    <circle cx="50" cy="30" r="3" fill="#030810"/>
-    <circle cx="30" cy="38" r="2.5" fill="#030810"/>
-    <circle cx="70" cy="38" r="2.5" fill="#030810"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <rect width="1000" height="1000" rx="180" fill="#111111"/>
+  <g transform="translate(0.0,198.5) scale(1.0)">
+    <path d="M 109,315 L 20,578 L 109,395 L 198,578 Z" fill="#D4AF37"/>
+    <path d="M 500,25 L 238,578 L 500,158 L 762,578 Z" fill="#D4AF37"/>
+    <path d="M 891,315 L 802,578 L 891,395 L 980,578 Z" fill="#D4AF37"/>
   </g>
-  <text x="50" y="92" text-anchor="middle" font-family="monospace" font-size="14" fill="#00e5ff" opacity="0.6">&gt;==|)&gt;</text>
 </svg>
